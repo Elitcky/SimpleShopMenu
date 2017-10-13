@@ -12,17 +12,17 @@ Simple Shop.
 
 *Removed smlib.
 
-Removed "Reset" on PlayerDeath
-Use SdkHooks to make the Invisibility
-Removed 'reset' of variable OnPlayerConnect & Disconnect
-Ordered Timers "section"
-Chaged 'int' to 'bool'
-Made bool 'format' same as other.
-Optimased if statements.
-Formatted one bracket.
-Ordered stocks
-No need to save timer handle. + Always pass UserId thru Timers.
-Updated compiled binaries
-Fixed binaries.
+*Removed "Reset" on PlayerDeath
+*Use SdkHooks to make the Invisibility
+*Removed 'reset' of variable OnPlayerConnect & Disconnect
+*Ordered Timers "section"
+*Chaged 'int' to 'bool'
+*Made bool 'format' same as other.
+*Optimased if statements.
+*Formatted one bracket.
+*Ordered stocks
+*No need to save timer handle. + Always pass UserId thru Timers.
+*Updated compiled binaries
+*Fixed binaries.
 
-Thanks to Hexer10 for his pull request fixes!
+**Thanks to Hexer10 for his pull request fixes!
