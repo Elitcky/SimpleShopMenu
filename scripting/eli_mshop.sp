@@ -168,30 +168,6 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	SetEntityGravity(client, 1.0);
 }
 
-public Action Timer_Invis(Handle timer, any client)
-{
-	SDKUnhook(client, SDKHook_SetTransmit, Hook_SetTransmit);
-	
-	CPrintToChat(client, "{green}[%s] {default} You are no longer invisible", Prefix);
-	CloseHandle(h_gtimer);
-}
-
-public Action Timer_Gravity(Handle timer, any client)
-{
-	SetEntityGravity(client, 1.0);
-	
-	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Gravity.", Prefix);
-	CloseHandle(h_gtimer);
-}
-
-public Action Timer_Speed(Handle timer, any client)
-{
-	SetClientSpeed(client, 1.0);
-	
-	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Speed.", Prefix);
-	CloseHandle(h_gtimer);
-}
-
 public void SetClientSpeed(int client, float speed)
 {
 	SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue", speed);
@@ -446,6 +422,32 @@ public Action Hook_SetTransmit(int entity, int client)
 		return Plugin_Handled;
 	
 	return Plugin_Continue;
+}
+
+
+//Timers
+public Action Timer_Invis(Handle timer, any client)
+{
+	SDKUnhook(client, SDKHook_SetTransmit, Hook_SetTransmit);
+	
+	CPrintToChat(client, "{green}[%s] {default} You are no longer invisible", Prefix);
+	CloseHandle(h_gtimer);
+}
+
+public Action Timer_Gravity(Handle timer, any client)
+{
+	SetEntityGravity(client, 1.0);
+	
+	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Gravity.", Prefix);
+	CloseHandle(h_gtimer);
+}
+
+public Action Timer_Speed(Handle timer, any client)
+{
+	SetClientSpeed(client, 1.0);
+	
+	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Speed.", Prefix);
+	CloseHandle(h_gtimer);
 }
 
 
