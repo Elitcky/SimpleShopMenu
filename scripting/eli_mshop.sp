@@ -22,6 +22,7 @@
 
 #define Prefix "SHOP"
 #pragma newdecls required
+#pragma semicolon 1
 
 //Define Invis stuff
 #define INVIS					{255,255,255,20}    //Change the last number in this case "20". For set alpha of invisibility. 0 = Full invisible  255 = Not Invisible
@@ -91,7 +92,7 @@ public void OnPluginStart()
 	
 	g_hTimeSpeed = CreateConVar("eli_time_speed", TIME_SPEED, "How long the speed effect lasts", _, true, 0.0);
 	g_hTimeGravity = CreateConVar("eli_time_gravity", TIME_GRAVITY, "How long the gravity effect lasts", _, true, 0.0);
-	g_hTimeInvisibility = CreateConVar("eli_time_invisibility", TIME_INVISIBILITY, "How long the invisibility effect lasts", _, true, 0.0);			
+	g_hTimeInvisibility = CreateConVar("eli_time_invisibility", TIME_INVISIBILITY, "How long the invisibility effect lasts", _, true, 0.0);
 	
 	
 	AutoExecConfig(true, "shop_cvars");
@@ -124,15 +125,15 @@ public void OnCvarChange(ConVar hConVar, const char[] sOldValue, const char[] sN
 	hConVar.GetName(sConVarName, sizeof(sConVarName));
 	
 	if (StrEqual("eli_speed", sConVarName))
-	g_fSpeed = hConVar.FloatValue; else
-	if (StrEqual("eli_gravity", sConVarName))
-	g_fGravity = hConVar.FloatValue; else
-	if (StrEqual("eli_time_speed", sConVarName))
-	g_fTimeSpeed = hConVar.FloatValue; else
-	if (StrEqual("eli_time_gravity", sConVarName))
-	g_fTimeGravity = hConVar.FloatValue; else
-	if (StrEqual("eli_time_invisibility", sConVarName))
-	g_fTimeInvisibility = hConVar.FloatValue;
+		g_fSpeed = hConVar.FloatValue;
+	else if (StrEqual("eli_gravity", sConVarName))
+		g_fGravity = hConVar.FloatValue;
+	else if (StrEqual("eli_time_speed", sConVarName))
+		g_fTimeSpeed = hConVar.FloatValue;
+	else if (StrEqual("eli_time_gravity", sConVarName))
+		g_fTimeGravity = hConVar.FloatValue;
+	else if (StrEqual("eli_time_invisibility", sConVarName))
+		g_fTimeInvisibility = hConVar.FloatValue;
 }
 
 public void OnClientConnected(int client)
@@ -168,7 +169,7 @@ public void RoundStart_Event(Event event, const char[] name, bool dontBroadcast)
 		DisableBuyZone ? AcceptEntityInput(ent, "Disable"):AcceptEntityInput(ent, "Enable");
 	}
 }
-*/    //IF YOU WANT TO DISABLE THE BUYZONE UN-MARK THIS LINE
+*/ //IF YOU WANT TO DISABLE THE BUYZONE UN-MARK THIS LINE
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
@@ -189,8 +190,8 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	
 	Colorize(client, NORMAL);
 	
-	SetClientSpeed(client,1.0)
-	SetEntityGravity(client,1.0)
+	SetClientSpeed(client, 1.0);
+	SetEntityGravity(client, 1.0);
 }
 
 public void Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
@@ -211,8 +212,8 @@ public void Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcas
 	
 	Colorize(client, NORMAL);
 	
-	SetClientSpeed(client,1.0)
-	SetEntityGravity(client,1.0)
+	SetClientSpeed(client, 1.0);
+	SetEntityGravity(client, 1.0);
 }
 
 public void Colorize(int client, int color[4])
@@ -277,7 +278,7 @@ public Action Timer_Invis(Handle timer, any client)
 
 public Action Timer_Gravity(Handle timer, any client)
 {
-	SetEntityGravity(client,1.0)
+	SetEntityGravity(client, 1.0);
 	
 	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Gravity.", Prefix);
 	CloseHandle(h_gtimer);
@@ -285,16 +286,16 @@ public Action Timer_Gravity(Handle timer, any client)
 
 public Action Timer_Speed(Handle timer, any client)
 {
-	SetClientSpeed(client,1.0)
+	SetClientSpeed(client, 1.0);
 	
 	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Speed.", Prefix);
 	CloseHandle(h_gtimer);
 }
 
-public void SetClientSpeed(int client, float speed) 
-{ 
-	SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue",speed)
-} 
+public void SetClientSpeed(int client, float speed)
+{
+	SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue", speed);
+}
 
 public Action CMD_Shop(int client, int args)
 {
@@ -498,7 +499,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased Gravity!", Prefix);
-					SetEntityGravity(client,g_fGravity)
+					SetEntityGravity(client, g_fGravity);
 					h_gtimer = CreateTimer(g_fTimeGravity, Timer_Gravity, client); // Timer Gravity
 					usergravity[client]++;
 				}
@@ -525,7 +526,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased Speed!", Prefix);
-					SetClientSpeed(client,g_fSpeed)
+					SetClientSpeed(client, g_fSpeed);
 					h_gtimer = CreateTimer(g_fTimeSpeed, Timer_Speed, client); // Timer Speed
 					userspeed[client]++;
 				}
