@@ -13,7 +13,6 @@
  */
 #include <sourcemod>
 #include <sdktools>
-#include <smlib>
 #include <multicolors>
 #include <cstrike>
 
@@ -46,6 +45,8 @@ int userhp[MAXPLAYERS + 1];
 int userdeagle[MAXPLAYERS + 1];
 int userinvisible[MAXPLAYERS + 1];
 int usergravity[MAXPLAYERS + 1];
+
+int iCashOffs;
 
 Handle h_gtimer = INVALID_HANDLE;
 
@@ -103,6 +104,9 @@ public void OnPluginStart()
 	g_hTimeSpeed.AddChangeHook(OnCvarChange);
 	g_hTimeGravity.AddChangeHook(OnCvarChange);
 	g_hTimeInvisibility.AddChangeHook(OnCvarChange);
+	
+	//Get Cash offset
+	iCashOffs = FindSendPropInfo("CCSPlayer", "m_iAccount");
 }
 
 public void OnConfigsExecuted()
@@ -179,7 +183,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	if (!client)
 		return;
 	
-	//code
+	//codea
 	userhp[client] = 0;
 	userhegrenade[client] = 0;
 	userfreezegrenade[client] = 0;
@@ -349,7 +353,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			char price[10];
 			kvtShop.GetString("price", price, sizeof(price));
 			
-			int money = Client_GetMoney(client);
+			int money = GetClientMoney(client);
 			int cost = StringToInt(price);
 			
 			//Main functions
@@ -368,7 +372,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased HP!", Prefix);
@@ -394,7 +398,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 				else if (money > cost || money == cost) {
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a HE Grenade!", Prefix);
@@ -418,7 +422,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a Decoy Grenade!", Prefix);
@@ -442,11 +446,11 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a Deagle Weapon with 1 bullet!", Prefix);
-					Client_GiveWeaponAndAmmo(client, "weapon_deagle", _, 0, _, 1);
+					GivePlayerItemAmmo(client, "weapon_deagle");
 					userdeagle[client]++;
 				}
 				else
@@ -466,7 +470,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//int target;
 					
@@ -493,7 +497,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//int target;
 					
@@ -520,7 +524,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//int target;
 					
@@ -538,4 +542,28 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 		}
 	}
+}
+
+
+//Stocks
+
+stock void SetClientMoney(int client, int money)
+{
+	SetEntData(client, iCashOffs, money);
+}
+
+
+stock int GetClientMoney(int client)
+{
+	return GetEntData(client, iCashOffs);
+}
+
+stock void GivePlayerItemAmmo(int client, const char[] item)
+{
+	int weaponEnt = GivePlayerItem(client, item);
+	
+	SetEntProp(weaponEnt, Prop_Data, "m_iClip1", 1);
+	
+	SetEntProp(weaponEnt, Prop_Send, "m_iPrimaryReserveAmmoCount", 0);
+	SetEntProp(weaponEnt, Prop_Send, "m_iSecondaryReserveAmmoCount", 0);
 } 
