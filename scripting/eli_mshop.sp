@@ -36,13 +36,13 @@
 
 char g_sEliShop[PLATFORM_MAX_PATH];
 
-bool userhegrenade[MAXPLAYERS + 1];
-bool userfreezegrenade[MAXPLAYERS + 1];
-bool userspeed[MAXPLAYERS + 1];
-bool userhp[MAXPLAYERS + 1];
-bool userdeagle[MAXPLAYERS + 1];
-bool userinvisible[MAXPLAYERS + 1];
-bool usergravity[MAXPLAYERS + 1];
+bool g_bUserhegrenade[MAXPLAYERS + 1];
+bool g_bUserfreezegrenade[MAXPLAYERS + 1];
+bool g_bUserspeed[MAXPLAYERS + 1];
+bool g_bUserhp[MAXPLAYERS + 1];
+bool g_bUserdeagle[MAXPLAYERS + 1];
+bool g_bUserinvisible[MAXPLAYERS + 1];
+bool g_bUsergravity[MAXPLAYERS + 1];
 
 int iCashOffs;
 
@@ -156,13 +156,13 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 		return;
 	
 	//codea
-	userhp[client] = false;
-	userhegrenade[client] = false;
-	userfreezegrenade[client] = false;
-	userdeagle[client] = false;
-	userspeed[client] = false;
-	userinvisible[client] = false;
-	usergravity[client] = false;
+	g_bUserhp[client] = false;
+	g_bUserhegrenade[client] = false;
+	g_bUserfreezegrenade[client] = false;
+	g_bUserdeagle[client] = false;
+	g_bUserspeed[client] = false;
+	g_bUserinvisible[client] = false;
+	g_bUsergravity[client] = false;
 	
 	SetClientSpeed(client, 1.0);
 	SetEntityGravity(client, 1.0);
@@ -235,7 +235,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			if (StrEqual(sItem, "health"))
 			{
-				if (!userhp[client])
+				if (!g_bUserhp[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -252,7 +252,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					int ivalue = StringToInt(value);
 					int ihealth = GetClientHealth(client);
 					SetEntityHealth(client, ihealth + ivalue);
-					userhp[client] = true;
+					g_bUserhp[client] = true;
 				}
 				else
 				{
@@ -262,7 +262,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_hegrenade"))
 			{
-				if (!userhegrenade[client])
+				if (!g_bUserhegrenade[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -275,7 +275,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a HE Grenade!", Prefix);
 					GivePlayerItem(client, "weapon_hegrenade");
-					userhegrenade[client] = true;
+					g_bUserhegrenade[client] = true;
 				}
 				else
 				{
@@ -285,7 +285,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_decoy"))
 			{
-				if (!userfreezegrenade[client])
+				if (!g_bUserfreezegrenade[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -299,7 +299,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a Decoy Grenade!", Prefix);
 					GivePlayerItem(client, "weapon_decoy");
-					userfreezegrenade[client] = true;
+					g_bUserfreezegrenade[client] = true;
 				}
 				else
 				{
@@ -309,7 +309,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_deagle"))
 			{
-				if (!userdeagle[client])
+				if (!g_bUserdeagle[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -323,7 +323,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a Deagle Weapon with 1 bullet!", Prefix);
 					GivePlayerItemAmmo(client, "weapon_deagle");
-					userdeagle[client] = true;
+					g_bUserdeagle[client] = true;
 				}
 				else
 				{
@@ -333,7 +333,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Invisibility"))
 			{
-				if (!userinvisible[client])
+				if (!g_bUserinvisible[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -350,7 +350,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You purchased Invisibility!", Prefix);
 					SDKHook(client, SDKHook_SetTransmit, Hook_SetTransmit);
 					h_gtimer = CreateTimer(g_fTimeInvisibility, Timer_Invis, client); // Timer Invisibility
-					userinvisible[client] = true;
+					g_bUserinvisible[client] = true;
 				}
 				else
 				{
@@ -360,7 +360,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Gravity"))
 			{
-				if (!usergravity[client])
+				if (!g_bUsergravity[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -377,7 +377,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You purchased Gravity!", Prefix);
 					SetEntityGravity(client, g_fGravity);
 					h_gtimer = CreateTimer(g_fTimeGravity, Timer_Gravity, client); // Timer Gravity
-					usergravity[client] = true;
+					g_bUsergravity[client] = true;
 				}
 				else
 				{
@@ -387,7 +387,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Speed"))
 			{
-				if (!userspeed[client])
+				if (!g_bUserspeed[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -404,7 +404,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You purchased Speed!", Prefix);
 					SetClientSpeed(client, g_fSpeed);
 					h_gtimer = CreateTimer(g_fTimeSpeed, Timer_Speed, client); // Timer Speed
-					userspeed[client] = true;
+					g_bUserspeed[client] = true;
 				}
 				else
 				{
