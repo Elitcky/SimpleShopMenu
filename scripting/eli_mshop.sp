@@ -134,28 +134,6 @@ public void OnCvarChange(ConVar hConVar, const char[] sOldValue, const char[] sN
 		g_fTimeInvisibility = hConVar.FloatValue;
 }
 
-public void OnClientConnected(int client)
-{
-	userhp[client] = 0;
-	userhegrenade[client] = 0;
-	userfreezegrenade[client] = 0;
-	userdeagle[client] = 0;
-	userspeed[client] = 0;
-	userinvisible[client] = 0;
-	usergravity[client] = 0;
-}
-
-public void OnClientDisconnect(int client)
-{
-	userhp[client] = 0;
-	userhegrenade[client] = 0;
-	userfreezegrenade[client] = 0;
-	userdeagle[client] = 0;
-	userspeed[client] = 0;
-	userinvisible[client] = 0;
-	usergravity[client] = 0;
-}
-
 /*  IF YOU WANT TO DISABLE THE BUYZONE UN-MARK THIS LINE
 public void RoundStart_Event(Event event, const char[] name, bool dontBroadcast)
 {
