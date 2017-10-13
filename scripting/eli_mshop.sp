@@ -15,17 +15,15 @@
 #include <sdktools>
 #include <multicolors>
 #include <cstrike>
+#include <sdkhooks>
 
 #define PLUGIN_AUTHOR "Elitcky"
-#define PLUGIN_VERSION "1.00"
+#define PLUGIN_VERSION "1.10"
 
 #define Prefix "SHOP"
 #pragma newdecls required
 #pragma semicolon 1
 
-//Define Invis stuff
-#define INVIS					{255,255,255,20}    //Change the last number in this case "20". For set alpha of invisibility. 0 = Full invisible  255 = Not Invisible
-#define NORMAL					{255,255,255,255}
 
 //Define Speed&Gravity
 #define SPEED_VELOCITY 			"1.2"
@@ -49,9 +47,6 @@ int usergravity[MAXPLAYERS + 1];
 int iCashOffs;
 
 Handle h_gtimer = INVALID_HANDLE;
-
-int g_wearableOffset;
-int g_shieldOffset;
 
 ConVar g_hSpeedVelocity;
 ConVar g_hGravity;
@@ -191,67 +186,13 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	userinvisible[client] = 0;
 	usergravity[client] = 0;
 	
-	Colorize(client, NORMAL);
-	
 	SetClientSpeed(client, 1.0);
 	SetEntityGravity(client, 1.0);
 }
 
-public void Colorize(int client, int color[4])
-{
-	int maxents = GetMaxEntities();
-	// Colorize player and weapons
-	int m_hMyWeapons = FindSendPropInfo("CBasePlayer", "m_hMyWeapons");
-	//int m_hMyWeapons = HasEntProp("CBasePlayer", "m_hMyWeapons");	
-	
-	for (int i = 0, weapon; i < 47; i += 4)
-	{
-		weapon = GetEntDataEnt2(client, m_hMyWeapons + i);
-		
-		if (weapon > -1)
-		{
-			char strClassname[250];
-			GetEdictClassname(weapon, strClassname, sizeof(strClassname));
-			//PrintToChatAll("strClassname is: %s", strClassname);
-			
-			SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
-			SetEntityRenderColor(weapon, color[0], color[1], color[2], color[3]);
-		}
-	}
-	
-	SetEntityRenderMode(client, RENDER_TRANSCOLOR);
-	SetEntityRenderColor(client, color[0], color[1], color[2], color[3]);
-	
-	// Colorize any wearable items
-	for (int i = MaxClients + 1; i <= maxents; i++)
-	{
-		if (!IsValidEntity(i))continue;
-		
-		char netclass[32];
-		GetEntityNetClass(i, netclass, sizeof(netclass));
-		
-		if (strcmp(netclass, "CTFWearableItem") == 0)
-		{
-			if (GetEntDataEnt2(i, g_wearableOffset) == client)
-			{
-				SetEntityRenderMode(i, RENDER_TRANSCOLOR);
-				SetEntityRenderColor(i, color[0], color[1], color[2], color[3]);
-			}
-		} else if (strcmp(netclass, "CTFWearableItemDemoShield") == 0)
-		{
-			if (GetEntDataEnt2(i, g_shieldOffset) == client)
-			{
-				SetEntityRenderMode(i, RENDER_TRANSCOLOR);
-				SetEntityRenderColor(i, color[0], color[1], color[2], color[3]);
-			}
-		}
-	}
-	return;
-}
-
 public Action Timer_Invis(Handle timer, any client)
 {
-	Colorize(client, NORMAL);
+	SDKUnhook(client, SDKHook_SetTransmit, Hook_SetTransmit);
 	
 	CPrintToChat(client, "{green}[%s] {default} You are no longer invisible", Prefix);
 	CloseHandle(h_gtimer);
@@ -453,7 +394,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased Invisibility!", Prefix);
-					Colorize(client, INVIS);
+					SDKHook(client, SDKHook_SetTransmit, Hook_SetTransmit);
 					h_gtimer = CreateTimer(g_fTimeInvisibility, Timer_Invis, client); // Timer Invisibility
 					userinvisible[client]++;
 				}
@@ -521,9 +462,16 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 	}
 }
 
+public Action Hook_SetTransmit(int entity, int client)
+{	
+	if (entity != client)
+		return Plugin_Handled;
+	
+	return Plugin_Continue;
+}
+
 
 //Stocks
-
 stock void SetClientMoney(int client, int money)
 {
 	SetEntData(client, iCashOffs, money);
