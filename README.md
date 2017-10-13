@@ -8,8 +8,10 @@ Like i said it's just a normal shop for every mode you want. You can addapt it.
 Simple Shop.
 
 # Version 1.10
-[*]Added Semicolon required. Changed "else if" style. Removed unseful white space.
-[*]Removed smlib.
+*Added Semicolon required. Changed "else if" style. Removed unseful white space.
+
+*Removed smlib.
+
 Removed "Reset" on PlayerDeath
 Use SdkHooks to make the Invisibility
 Removed 'reset' of variable OnPlayerConnect & Disconnect
