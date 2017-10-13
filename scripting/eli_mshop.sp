@@ -36,13 +36,13 @@
 
 char g_sEliShop[PLATFORM_MAX_PATH];
 
-int userhegrenade[MAXPLAYERS + 1];
-int userfreezegrenade[MAXPLAYERS + 1];
-int userspeed[MAXPLAYERS + 1];
-int userhp[MAXPLAYERS + 1];
-int userdeagle[MAXPLAYERS + 1];
-int userinvisible[MAXPLAYERS + 1];
-int usergravity[MAXPLAYERS + 1];
+bool userhegrenade[MAXPLAYERS + 1];
+bool userfreezegrenade[MAXPLAYERS + 1];
+bool userspeed[MAXPLAYERS + 1];
+bool userhp[MAXPLAYERS + 1];
+bool userdeagle[MAXPLAYERS + 1];
+bool userinvisible[MAXPLAYERS + 1];
+bool usergravity[MAXPLAYERS + 1];
 
 int iCashOffs;
 
@@ -156,13 +156,13 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 		return;
 	
 	//codea
-	userhp[client] = 0;
-	userhegrenade[client] = 0;
-	userfreezegrenade[client] = 0;
-	userdeagle[client] = 0;
-	userspeed[client] = 0;
-	userinvisible[client] = 0;
-	usergravity[client] = 0;
+	userhp[client] = false;
+	userhegrenade[client] = false;
+	userfreezegrenade[client] = false;
+	userdeagle[client] = false;
+	userspeed[client] = false;
+	userinvisible[client] = false;
+	usergravity[client] = false;
 	
 	SetClientSpeed(client, 1.0);
 	SetEntityGravity(client, 1.0);
@@ -235,7 +235,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			if (StrEqual(sItem, "health"))
 			{
-				if (userhp[client] > 0)
+				if (!userhp[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -252,7 +252,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					int ivalue = StringToInt(value);
 					int ihealth = GetClientHealth(client);
 					SetEntityHealth(client, ihealth + ivalue);
-					userhp[client]++;
+					userhp[client] = true;
 				}
 				else
 				{
@@ -262,7 +262,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_hegrenade"))
 			{
-				if (userhegrenade[client] > 0)
+				if (!userhegrenade[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -275,7 +275,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a HE Grenade!", Prefix);
 					GivePlayerItem(client, "weapon_hegrenade");
-					userhegrenade[client]++;
+					userhegrenade[client] = true;
 				}
 				else
 				{
@@ -285,7 +285,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_decoy"))
 			{
-				if (userfreezegrenade[client] > 0)
+				if (!userfreezegrenade[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -299,7 +299,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a Decoy Grenade!", Prefix);
 					GivePlayerItem(client, "weapon_decoy");
-					userfreezegrenade[client]++;
+					userfreezegrenade[client] = true;
 				}
 				else
 				{
@@ -309,7 +309,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_deagle"))
 			{
-				if (userdeagle[client] > 0)
+				if (!userdeagle[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -323,7 +323,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a Deagle Weapon with 1 bullet!", Prefix);
 					GivePlayerItemAmmo(client, "weapon_deagle");
-					userdeagle[client]++;
+					userdeagle[client] = true;
 				}
 				else
 				{
@@ -333,7 +333,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Invisibility"))
 			{
-				if (userinvisible[client] > 0)
+				if (!userinvisible[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -350,7 +350,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You purchased Invisibility!", Prefix);
 					SDKHook(client, SDKHook_SetTransmit, Hook_SetTransmit);
 					h_gtimer = CreateTimer(g_fTimeInvisibility, Timer_Invis, client); // Timer Invisibility
-					userinvisible[client]++;
+					userinvisible[client] = true;
 				}
 				else
 				{
@@ -360,7 +360,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Gravity"))
 			{
-				if (usergravity[client] > 0)
+				if (!usergravity[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -377,7 +377,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You purchased Gravity!", Prefix);
 					SetEntityGravity(client, g_fGravity);
 					h_gtimer = CreateTimer(g_fTimeGravity, Timer_Gravity, client); // Timer Gravity
-					usergravity[client]++;
+					usergravity[client] = true;
 				}
 				else
 				{
@@ -387,7 +387,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Speed"))
 			{
-				if (userspeed[client] > 0)
+				if (!userspeed[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -404,7 +404,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You purchased Speed!", Prefix);
 					SetClientSpeed(client, g_fSpeed);
 					h_gtimer = CreateTimer(g_fTimeSpeed, Timer_Speed, client); // Timer Speed
-					userspeed[client]++;
+					userspeed[client] = true;
 				}
 				else
 				{
@@ -417,7 +417,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 }
 
 public Action Hook_SetTransmit(int entity, int client)
-{	
+{
 	if (entity != client)
 		return Plugin_Handled;
 	
