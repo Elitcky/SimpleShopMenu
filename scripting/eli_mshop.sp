@@ -168,11 +168,6 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	SetEntityGravity(client, 1.0);
 }
 
-public void SetClientSpeed(int client, float speed)
-{
-	SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue", speed);
-}
-
 public Action CMD_Shop(int client, int args)
 {
 	//cHECK
@@ -453,11 +448,15 @@ public Action Timer_Speed(Handle timer, any client)
 
 
 //Stocks
+stock void SetClientSpeed(int client, float speed)
+{
+	SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue", speed);
+}
+
 stock void SetClientMoney(int client, int money)
 {
 	SetEntData(client, iCashOffs, money);
 }
-
 
 stock int GetClientMoney(int client)
 {
