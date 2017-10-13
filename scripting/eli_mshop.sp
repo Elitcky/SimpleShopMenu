@@ -46,8 +46,6 @@ bool g_bUsergravity[MAXPLAYERS + 1];
 
 int iCashOffs;
 
-Handle h_gtimer = INVALID_HANDLE;
-
 ConVar g_hSpeedVelocity;
 ConVar g_hGravity;
 
@@ -262,7 +260,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money >= cost) 
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
@@ -345,7 +343,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased Invisibility!", Prefix);
 					SDKHook(client, SDKHook_SetTransmit, Hook_SetTransmit);
-					h_gtimer = CreateTimer(g_fTimeInvisibility, Timer_Invis, client); // Timer Invisibility
+					CreateTimer(g_fTimeInvisibility, Timer_Invis, GetClientUserId(client)); // Timer Invisibility
 					g_bUserinvisible[client] = true;
 				}
 				else
@@ -372,7 +370,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased Gravity!", Prefix);
 					SetEntityGravity(client, g_fGravity);
-					h_gtimer = CreateTimer(g_fTimeGravity, Timer_Gravity, client); // Timer Gravity
+					CreateTimer(g_fTimeGravity, Timer_Gravity, GetClientUserId(client)); // Timer Gravity
 					g_bUsergravity[client] = true;
 				}
 				else
@@ -399,7 +397,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased Speed!", Prefix);
 					SetClientSpeed(client, g_fSpeed);
-					h_gtimer = CreateTimer(g_fTimeSpeed, Timer_Speed, client); // Timer Speed
+					CreateTimer(g_fTimeSpeed, Timer_Speed, GetClientUserId(client)); // Timer Speed
 					g_bUserspeed[client] = true;
 				}
 				else
@@ -422,28 +420,46 @@ public Action Hook_SetTransmit(int entity, int client)
 
 
 //Timers
-public Action Timer_Invis(Handle timer, any client)
+public Action Timer_Invis(Handle timer, any userid)
 {
+	int client = GetClientOfUserId(userid);
+	
+	//Client is not valid anymore or is death
+	if (!client || !IsPlayerAlive(client))
+		return Plugin_Continue;
+	
 	SDKUnhook(client, SDKHook_SetTransmit, Hook_SetTransmit);
 	
 	CPrintToChat(client, "{green}[%s] {default} You are no longer invisible", Prefix);
-	CloseHandle(h_gtimer);
+	return Plugin_Continue;
 }
 
-public Action Timer_Gravity(Handle timer, any client)
+public Action Timer_Gravity(Handle timer, any userid)
 {
+	int client = GetClientOfUserId(userid);
+	
+	//Client is not valid anymore or is death
+	if (!client || !IsPlayerAlive(client))
+		return Plugin_Continue;
+	
 	SetEntityGravity(client, 1.0);
 	
 	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Gravity.", Prefix);
-	CloseHandle(h_gtimer);
+	return Plugin_Continue;
 }
 
-public Action Timer_Speed(Handle timer, any client)
+public Action Timer_Speed(Handle timer, any userid)
 {
+	int client = GetClientOfUserId(userid);
+	
+	//Client is not valid anymore or is death
+	if (!client || !IsPlayerAlive(client))
+		return Plugin_Continue;
+	
 	SetClientSpeed(client, 1.0);
 	
 	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Speed.", Prefix);
-	CloseHandle(h_gtimer);
+	return Plugin_Continue;
 }
 
 
