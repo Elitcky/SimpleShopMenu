@@ -240,7 +240,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
@@ -267,7 +267,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost) {
+				else if (money >= cost) {
 					//Take off money
 					int Cash = money - cost;
 					SetClientMoney(client, Cash);
@@ -290,7 +290,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
@@ -314,7 +314,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
@@ -338,7 +338,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
@@ -365,7 +365,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
@@ -392,7 +392,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
