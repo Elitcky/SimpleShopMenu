@@ -86,7 +86,6 @@ public void OnPluginStart()
 	
 	//HookEvent("round_start", RoundStart_Event);  //This un-marked enable the Block BUYZONE  Check RoundStart_Event too.
 	HookEvent("player_spawn", Event_PlayerSpawn);
-	HookEvent("player_death", Event_PlayerDeath);
 	
 	g_hSpeedVelocity = CreateConVar("eli_speed", SPEED_VELOCITY, "Amount of Speed a Player gets (0.1 = reduce speed // 2.0 = give more speed)", _, true, 0.1);
 	g_hGravity = CreateConVar("eli_gravity", GRAVITY_L, "Amount of Gravity a player Gets (0.1 = More Gravity // 2.0 = give less Gravity)", _, true, 0.1);
@@ -184,28 +183,6 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 		return;
 	
 	//codea
-	userhp[client] = 0;
-	userhegrenade[client] = 0;
-	userfreezegrenade[client] = 0;
-	userdeagle[client] = 0;
-	userspeed[client] = 0;
-	userinvisible[client] = 0;
-	usergravity[client] = 0;
-	
-	Colorize(client, NORMAL);
-	
-	SetClientSpeed(client, 1.0);
-	SetEntityGravity(client, 1.0);
-}
-
-public void Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
-{
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	
-	//Check for valid client
-	if (!client)
-		return;
-	
 	userhp[client] = 0;
 	userhegrenade[client] = 0;
 	userfreezegrenade[client] = 0;
