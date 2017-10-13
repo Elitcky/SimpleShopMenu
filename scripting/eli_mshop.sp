@@ -13,19 +13,17 @@
  */
 #include <sourcemod>
 #include <sdktools>
-#include <smlib>
 #include <multicolors>
 #include <cstrike>
+#include <sdkhooks>
 
 #define PLUGIN_AUTHOR "Elitcky"
-#define PLUGIN_VERSION "1.00"
+#define PLUGIN_VERSION "1.10"
 
 #define Prefix "SHOP"
 #pragma newdecls required
+#pragma semicolon 1
 
-//Define Invis stuff
-#define INVIS					{255,255,255,20}    //Change the last number in this case "20". For set alpha of invisibility. 0 = Full invisible  255 = Not Invisible
-#define NORMAL					{255,255,255,255}
 
 //Define Speed&Gravity
 #define SPEED_VELOCITY 			"1.2"
@@ -38,18 +36,15 @@
 
 char g_sEliShop[PLATFORM_MAX_PATH];
 
-int userhegrenade[MAXPLAYERS + 1];
-int userfreezegrenade[MAXPLAYERS + 1];
-int userspeed[MAXPLAYERS + 1];
-int userhp[MAXPLAYERS + 1];
-int userdeagle[MAXPLAYERS + 1];
-int userinvisible[MAXPLAYERS + 1];
-int usergravity[MAXPLAYERS + 1];
+bool g_bUserhegrenade[MAXPLAYERS + 1];
+bool g_bUserfreezegrenade[MAXPLAYERS + 1];
+bool g_bUserspeed[MAXPLAYERS + 1];
+bool g_bUserhp[MAXPLAYERS + 1];
+bool g_bUserdeagle[MAXPLAYERS + 1];
+bool g_bUserinvisible[MAXPLAYERS + 1];
+bool g_bUsergravity[MAXPLAYERS + 1];
 
-Handle h_gtimer = INVALID_HANDLE;
-
-int g_wearableOffset;
-int g_shieldOffset;
+int iCashOffs;
 
 ConVar g_hSpeedVelocity;
 ConVar g_hGravity;
@@ -84,14 +79,13 @@ public void OnPluginStart()
 	
 	//HookEvent("round_start", RoundStart_Event);  //This un-marked enable the Block BUYZONE  Check RoundStart_Event too.
 	HookEvent("player_spawn", Event_PlayerSpawn);
-	HookEvent("player_death", Event_PlayerDeath);
 	
 	g_hSpeedVelocity = CreateConVar("eli_speed", SPEED_VELOCITY, "Amount of Speed a Player gets (0.1 = reduce speed // 2.0 = give more speed)", _, true, 0.1);
 	g_hGravity = CreateConVar("eli_gravity", GRAVITY_L, "Amount of Gravity a player Gets (0.1 = More Gravity // 2.0 = give less Gravity)", _, true, 0.1);
 	
 	g_hTimeSpeed = CreateConVar("eli_time_speed", TIME_SPEED, "How long the speed effect lasts", _, true, 0.0);
 	g_hTimeGravity = CreateConVar("eli_time_gravity", TIME_GRAVITY, "How long the gravity effect lasts", _, true, 0.0);
-	g_hTimeInvisibility = CreateConVar("eli_time_invisibility", TIME_INVISIBILITY, "How long the invisibility effect lasts", _, true, 0.0);			
+	g_hTimeInvisibility = CreateConVar("eli_time_invisibility", TIME_INVISIBILITY, "How long the invisibility effect lasts", _, true, 0.0);
 	
 	
 	AutoExecConfig(true, "shop_cvars");
@@ -102,6 +96,9 @@ public void OnPluginStart()
 	g_hTimeSpeed.AddChangeHook(OnCvarChange);
 	g_hTimeGravity.AddChangeHook(OnCvarChange);
 	g_hTimeInvisibility.AddChangeHook(OnCvarChange);
+	
+	//Get Cash offset
+	iCashOffs = FindSendPropInfo("CCSPlayer", "m_iAccount");
 }
 
 public void OnConfigsExecuted()
@@ -124,37 +121,15 @@ public void OnCvarChange(ConVar hConVar, const char[] sOldValue, const char[] sN
 	hConVar.GetName(sConVarName, sizeof(sConVarName));
 	
 	if (StrEqual("eli_speed", sConVarName))
-	g_fSpeed = hConVar.FloatValue; else
-	if (StrEqual("eli_gravity", sConVarName))
-	g_fGravity = hConVar.FloatValue; else
-	if (StrEqual("eli_time_speed", sConVarName))
-	g_fTimeSpeed = hConVar.FloatValue; else
-	if (StrEqual("eli_time_gravity", sConVarName))
-	g_fTimeGravity = hConVar.FloatValue; else
-	if (StrEqual("eli_time_invisibility", sConVarName))
-	g_fTimeInvisibility = hConVar.FloatValue;
-}
-
-public void OnClientConnected(int client)
-{
-	userhp[client] = 0;
-	userhegrenade[client] = 0;
-	userfreezegrenade[client] = 0;
-	userdeagle[client] = 0;
-	userspeed[client] = 0;
-	userinvisible[client] = 0;
-	usergravity[client] = 0;
-}
-
-public void OnClientDisconnect(int client)
-{
-	userhp[client] = 0;
-	userhegrenade[client] = 0;
-	userfreezegrenade[client] = 0;
-	userdeagle[client] = 0;
-	userspeed[client] = 0;
-	userinvisible[client] = 0;
-	usergravity[client] = 0;
+		g_fSpeed = hConVar.FloatValue;
+	else if (StrEqual("eli_gravity", sConVarName))
+		g_fGravity = hConVar.FloatValue;
+	else if (StrEqual("eli_time_speed", sConVarName))
+		g_fTimeSpeed = hConVar.FloatValue;
+	else if (StrEqual("eli_time_gravity", sConVarName))
+		g_fTimeGravity = hConVar.FloatValue;
+	else if (StrEqual("eli_time_invisibility", sConVarName))
+		g_fTimeInvisibility = hConVar.FloatValue;
 }
 
 /*  IF YOU WANT TO DISABLE THE BUYZONE UN-MARK THIS LINE
@@ -168,7 +143,7 @@ public void RoundStart_Event(Event event, const char[] name, bool dontBroadcast)
 		DisableBuyZone ? AcceptEntityInput(ent, "Disable"):AcceptEntityInput(ent, "Enable");
 	}
 }
-*/    //IF YOU WANT TO DISABLE THE BUYZONE UN-MARK THIS LINE
+*/ //IF YOU WANT TO DISABLE THE BUYZONE UN-MARK THIS LINE
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
@@ -178,123 +153,18 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	if (!client)
 		return;
 	
-	//code
-	userhp[client] = 0;
-	userhegrenade[client] = 0;
-	userfreezegrenade[client] = 0;
-	userdeagle[client] = 0;
-	userspeed[client] = 0;
-	userinvisible[client] = 0;
-	usergravity[client] = 0;
+	//codea
+	g_bUserhp[client] = false;
+	g_bUserhegrenade[client] = false;
+	g_bUserfreezegrenade[client] = false;
+	g_bUserdeagle[client] = false;
+	g_bUserspeed[client] = false;
+	g_bUserinvisible[client] = false;
+	g_bUsergravity[client] = false;
 	
-	Colorize(client, NORMAL);
-	
-	SetClientSpeed(client,1.0)
-	SetEntityGravity(client,1.0)
+	SetClientSpeed(client, 1.0);
+	SetEntityGravity(client, 1.0);
 }
-
-public void Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
-{
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	
-	//Check for valid client
-	if (!client)
-		return;
-	
-	userhp[client] = 0;
-	userhegrenade[client] = 0;
-	userfreezegrenade[client] = 0;
-	userdeagle[client] = 0;
-	userspeed[client] = 0;
-	userinvisible[client] = 0;
-	usergravity[client] = 0;
-	
-	Colorize(client, NORMAL);
-	
-	SetClientSpeed(client,1.0)
-	SetEntityGravity(client,1.0)
-}
-
-public void Colorize(int client, int color[4])
-{
-	int maxents = GetMaxEntities();
-	// Colorize player and weapons
-	int m_hMyWeapons = FindSendPropInfo("CBasePlayer", "m_hMyWeapons");
-	//int m_hMyWeapons = HasEntProp("CBasePlayer", "m_hMyWeapons");	
-	
-	for (int i = 0, weapon; i < 47; i += 4)
-	{
-		weapon = GetEntDataEnt2(client, m_hMyWeapons + i);
-		
-		if (weapon > -1)
-		{
-			char strClassname[250];
-			GetEdictClassname(weapon, strClassname, sizeof(strClassname));
-			//PrintToChatAll("strClassname is: %s", strClassname);
-			
-			SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
-			SetEntityRenderColor(weapon, color[0], color[1], color[2], color[3]);
-		}
-	}
-	
-	SetEntityRenderMode(client, RENDER_TRANSCOLOR);
-	SetEntityRenderColor(client, color[0], color[1], color[2], color[3]);
-	
-	// Colorize any wearable items
-	for (int i = MaxClients + 1; i <= maxents; i++)
-	{
-		if (!IsValidEntity(i))continue;
-		
-		char netclass[32];
-		GetEntityNetClass(i, netclass, sizeof(netclass));
-		
-		if (strcmp(netclass, "CTFWearableItem") == 0)
-		{
-			if (GetEntDataEnt2(i, g_wearableOffset) == client)
-			{
-				SetEntityRenderMode(i, RENDER_TRANSCOLOR);
-				SetEntityRenderColor(i, color[0], color[1], color[2], color[3]);
-			}
-		} else if (strcmp(netclass, "CTFWearableItemDemoShield") == 0)
-		{
-			if (GetEntDataEnt2(i, g_shieldOffset) == client)
-			{
-				SetEntityRenderMode(i, RENDER_TRANSCOLOR);
-				SetEntityRenderColor(i, color[0], color[1], color[2], color[3]);
-			}
-		}
-	}
-	return;
-}
-
-public Action Timer_Invis(Handle timer, any client)
-{
-	Colorize(client, NORMAL);
-	
-	CPrintToChat(client, "{green}[%s] {default} You are no longer invisible", Prefix);
-	CloseHandle(h_gtimer);
-}
-
-public Action Timer_Gravity(Handle timer, any client)
-{
-	SetEntityGravity(client,1.0)
-	
-	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Gravity.", Prefix);
-	CloseHandle(h_gtimer);
-}
-
-public Action Timer_Speed(Handle timer, any client)
-{
-	SetClientSpeed(client,1.0)
-	
-	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Speed.", Prefix);
-	CloseHandle(h_gtimer);
-}
-
-public void SetClientSpeed(int client, float speed) 
-{ 
-	SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue",speed)
-} 
 
 public Action CMD_Shop(int client, int args)
 {
@@ -348,7 +218,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			char price[10];
 			kvtShop.GetString("price", price, sizeof(price));
 			
-			int money = Client_GetMoney(client);
+			int money = GetClientMoney(client);
 			int cost = StringToInt(price);
 			
 			//Main functions
@@ -358,16 +228,16 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			if (StrEqual(sItem, "health"))
 			{
-				if (userhp[client] > 0)
+				if (!g_bUserhp[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased HP!", Prefix);
@@ -375,7 +245,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 					int ivalue = StringToInt(value);
 					int ihealth = GetClientHealth(client);
 					SetEntityHealth(client, ihealth + ivalue);
-					userhp[client]++;
+					g_bUserhp[client] = true;
 				}
 				else
 				{
@@ -385,20 +255,21 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_hegrenade"))
 			{
-				if (userhegrenade[client] > 0)
+				if (!g_bUserhegrenade[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost) {
+				else if (money >= cost)
+				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a HE Grenade!", Prefix);
 					GivePlayerItem(client, "weapon_hegrenade");
-					userhegrenade[client]++;
+					g_bUserhegrenade[client] = true;
 				}
 				else
 				{
@@ -408,21 +279,21 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_decoy"))
 			{
-				if (userfreezegrenade[client] > 0)
+				if (!g_bUserfreezegrenade[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a Decoy Grenade!", Prefix);
 					GivePlayerItem(client, "weapon_decoy");
-					userfreezegrenade[client]++;
+					g_bUserfreezegrenade[client] = true;
 				}
 				else
 				{
@@ -432,21 +303,21 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_deagle"))
 			{
-				if (userdeagle[client] > 0)
+				if (!g_bUserdeagle[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased a Deagle Weapon with 1 bullet!", Prefix);
-					Client_GiveWeaponAndAmmo(client, "weapon_deagle", _, 0, _, 1);
-					userdeagle[client]++;
+					GivePlayerItemAmmo(client, "weapon_deagle");
+					g_bUserdeagle[client] = true;
 				}
 				else
 				{
@@ -456,24 +327,24 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Invisibility"))
 			{
-				if (userinvisible[client] > 0)
+				if (!g_bUserinvisible[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//int target;
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased Invisibility!", Prefix);
-					Colorize(client, INVIS);
-					h_gtimer = CreateTimer(g_fTimeInvisibility, Timer_Invis, client); // Timer Invisibility
-					userinvisible[client]++;
+					SDKHook(client, SDKHook_SetTransmit, Hook_SetTransmit);
+					CreateTimer(g_fTimeInvisibility, Timer_Invis, GetClientUserId(client)); // Timer Invisibility
+					g_bUserinvisible[client] = true;
 				}
 				else
 				{
@@ -483,24 +354,24 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Gravity"))
 			{
-				if (usergravity[client] > 0)
+				if (!g_bUsergravity[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//int target;
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased Gravity!", Prefix);
-					SetEntityGravity(client,g_fGravity)
-					h_gtimer = CreateTimer(g_fTimeGravity, Timer_Gravity, client); // Timer Gravity
-					usergravity[client]++;
+					SetEntityGravity(client, g_fGravity);
+					CreateTimer(g_fTimeGravity, Timer_Gravity, GetClientUserId(client)); // Timer Gravity
+					g_bUsergravity[client] = true;
 				}
 				else
 				{
@@ -510,24 +381,24 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Speed"))
 			{
-				if (userspeed[client] > 0)
+				if (!g_bUserspeed[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
 				}
-				else if (money > cost || money == cost)
+				else if (money >= cost)
 				{
 					//Take off money
 					int Cash = money - cost;
-					Client_SetMoney(client, Cash);
+					SetClientMoney(client, Cash);
 					
 					//int target;
 					
 					//Print message in chat
 					CPrintToChat(client, "{green}[%s] {default} You purchased Speed!", Prefix);
-					SetClientSpeed(client,g_fSpeed)
-					h_gtimer = CreateTimer(g_fTimeSpeed, Timer_Speed, client); // Timer Speed
-					userspeed[client]++;
+					SetClientSpeed(client, g_fSpeed);
+					CreateTimer(g_fTimeSpeed, Timer_Speed, GetClientUserId(client)); // Timer Speed
+					g_bUserspeed[client] = true;
 				}
 				else
 				{
@@ -537,4 +408,83 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 		}
 	}
+}
+
+public Action Hook_SetTransmit(int entity, int client)
+{
+	if (entity != client)
+		return Plugin_Handled;
+	
+	return Plugin_Continue;
+}
+
+
+//Timers
+public Action Timer_Invis(Handle timer, any userid)
+{
+	int client = GetClientOfUserId(userid);
+	
+	//Client is not valid anymore or is death
+	if (!client || !IsPlayerAlive(client))
+		return Plugin_Continue;
+	
+	SDKUnhook(client, SDKHook_SetTransmit, Hook_SetTransmit);
+	
+	CPrintToChat(client, "{green}[%s] {default} You are no longer invisible", Prefix);
+	return Plugin_Continue;
+}
+
+public Action Timer_Gravity(Handle timer, any userid)
+{
+	int client = GetClientOfUserId(userid);
+	
+	//Client is not valid anymore or is death
+	if (!client || !IsPlayerAlive(client))
+		return Plugin_Continue;
+	
+	SetEntityGravity(client, 1.0);
+	
+	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Gravity.", Prefix);
+	return Plugin_Continue;
+}
+
+public Action Timer_Speed(Handle timer, any userid)
+{
+	int client = GetClientOfUserId(userid);
+	
+	//Client is not valid anymore or is death
+	if (!client || !IsPlayerAlive(client))
+		return Plugin_Continue;
+	
+	SetClientSpeed(client, 1.0);
+	
+	CPrintToChat(client, "{green}[%s] {default} You have returned to your Normal Speed.", Prefix);
+	return Plugin_Continue;
+}
+
+
+//Stocks
+stock void SetClientSpeed(int client, float speed)
+{
+	SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue", speed);
+}
+
+stock void SetClientMoney(int client, int money)
+{
+	SetEntData(client, iCashOffs, money);
+}
+
+stock int GetClientMoney(int client)
+{
+	return GetEntData(client, iCashOffs);
+}
+
+stock void GivePlayerItemAmmo(int client, const char[] item)
+{
+	int weaponEnt = GivePlayerItem(client, item);
+	
+	SetEntProp(weaponEnt, Prop_Data, "m_iClip1", 1);
+	
+	SetEntProp(weaponEnt, Prop_Send, "m_iPrimaryReserveAmmoCount", 0);
+	SetEntProp(weaponEnt, Prop_Send, "m_iSecondaryReserveAmmoCount", 0);
 } 
