@@ -79,6 +79,7 @@ public void OnPluginStart()
 	
 	//HookEvent("round_start", RoundStart_Event);  //This un-marked enable the Block BUYZONE  Check RoundStart_Event too.
 	HookEvent("player_spawn", Event_PlayerSpawn);
+	HookEvent("player_death", Event_PlayerDeath);
 	
 	g_hSpeedVelocity = CreateConVar("eli_speed", SPEED_VELOCITY, "Amount of Speed a Player gets (0.1 = reduce speed // 2.0 = give more speed)", _, true, 0.1);
 	g_hGravity = CreateConVar("eli_gravity", GRAVITY_L, "Amount of Gravity a player Gets (0.1 = More Gravity // 2.0 = give less Gravity)", _, true, 0.1);
@@ -166,6 +167,56 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	SetEntityGravity(client, 1.0);
 }
 
+public void OnClientConnected(int client)
+{
+	//Check for valid client
+	if (!client)
+		return;
+	
+	//codea
+	g_bUserhp[client] = false;
+	g_bUserhegrenade[client] = false;
+	g_bUserfreezegrenade[client] = false;
+	g_bUserdeagle[client] = false;
+	g_bUserspeed[client] = false;
+	g_bUserinvisible[client] = false;
+	g_bUsergravity[client] = false;
+}
+
+public void OnClientDisconnect(int client)
+{
+	//Check for valid client
+	if (!client)
+		return;
+	
+	//codea
+	g_bUserhp[client] = false;
+	g_bUserhegrenade[client] = false;
+	g_bUserfreezegrenade[client] = false;
+	g_bUserdeagle[client] = false;
+	g_bUserspeed[client] = false;
+	g_bUserinvisible[client] = false;
+	g_bUsergravity[client] = false;
+}
+
+public void Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+	
+	//Check for valid client
+	if (!client)
+		return;
+	
+	//codea
+	g_bUserhp[client] = false;
+	g_bUserhegrenade[client] = false;
+	g_bUserfreezegrenade[client] = false;
+	g_bUserdeagle[client] = false;
+	g_bUserspeed[client] = false;
+	g_bUserinvisible[client] = false;
+	g_bUsergravity[client] = false;
+}
+
 public Action CMD_Shop(int client, int args)
 {
 	//cHECK
@@ -228,7 +279,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			if (StrEqual(sItem, "health"))
 			{
-				if (!g_bUserhp[client])
+				if (g_bUserhp[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -255,7 +306,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_hegrenade"))
 			{
-				if (!g_bUserhegrenade[client])
+				if (g_bUserhegrenade[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -279,7 +330,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_decoy"))
 			{
-				if (!g_bUserfreezegrenade[client])
+				if (g_bUserfreezegrenade[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -303,7 +354,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "weapon_deagle"))
 			{
-				if (!g_bUserdeagle[client])
+				if (g_bUserdeagle[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -327,7 +378,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Invisibility"))
 			{
-				if (!g_bUserinvisible[client])
+				if (g_bUserinvisible[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -354,7 +405,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Gravity"))
 			{
-				if (!g_bUsergravity[client])
+				if (g_bUsergravity[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
@@ -381,7 +432,7 @@ public int MenuHandler_Shop(Menu menu, MenuAction action, int client, int item)
 			
 			else if (StrEqual(sItem, "Speed"))
 			{
-				if (!g_bUserspeed[client])
+				if (g_bUserspeed[client])
 				{
 					CPrintToChat(client, "{green}[%s] {default} You already own this item!", Prefix);
 					return;
